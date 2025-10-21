@@ -1,0 +1,113 @@
+
+
+import tkinter as tk
+from tkinter import messagebox
+import datetime
+from tkcalendar import DateEntry
+from tkinter import ttk
+
+
+import tkinter as tk
+
+
+# DBT PLEASE items
+PLEASE_ITEMS = [
+    "I felt physically well/treated my physical illness 💊",
+    "I made healthy eating choices 🍽️",
+    "I avoided mood-altering substances ☀️",
+    "I got a good amount of sleep 💤",
+    "I exercised 💪",
+]
+
+
+
+
+# Create the main window
+root = tk.Tk()
+root.title("DBT PLEASE Mood Tracker")
+root.geometry("400x500")
+
+# Store checkbox values
+check_vars = {}
+
+# Title Label
+title_label = tk.Label(root, text="Hi! How are you doing today?", font=("Marker Felt", 16))
+title_label.pack(pady=20)
+
+# Create checkboxes
+for item in PLEASE_ITEMS:
+    var = tk.IntVar()
+    check_vars[item] = var
+    frame = tk.Frame(root)
+    frame.pack(anchor='w', padx=20)
+    cb = tk.Checkbutton(frame, text=item, variable=var, font=("Helvetica", 12))
+    cb.pack(side="left")
+
+# Notes box
+notes_label = ttk.Label(...)(root, text="Notes (optional):", font=("Helvetica", 12))
+notes_label.pack(pady=(20, 0))
+notes_entry = tk.Text(root, height=4, width=40)
+notes_entry.pack()
+
+# Date selection
+date_label = tk.Label(root, text="Select the date:", font=("Helvetica", 12))
+date_label.pack(pady=(10, 0))
+
+date_entry = DateEntry(root, width=12, background='darkblue',
+                       foreground='white', borderwidth=2, font=("Helvetica", 12))
+date_entry.pack(pady=(0, 10))
+
+# Mood selection label
+mood_label = tk.Label(root, text="Select your current mood:", font=("Helvetica", 12))
+mood_label.pack(pady=(20, 5))
+
+# Mood options
+moods = {
+    "Happy": "😊",
+    "Sad": "😢",
+    "Angry": "😠",
+    "Tired": "😴",
+    "Neutral": "😐"
+}
+selected_mood = tk.StringVar(value="")
+
+# Create mood buttons
+mood_frame = tk.Frame(root)
+mood_frame.pack()
+
+def set_mood(mood):
+    selected_mood.set(mood)
+
+for mood, emoji in moods.items():
+    btn = tk.Button(mood_frame, text=emoji, font=("Helvetica", 16),
+                    command=lambda m=mood: set_mood(m))
+    btn.pack(side="left", padx=5)
+
+# Save Button action
+def save_data():
+    date_str = date_entry.get()
+    status = {item: var.get() for item, var in check_vars.items()}
+    notes = notes_entry.get("1.0", tk.END).strip()
+    mood = selected_mood.get()  #  New line: get selected mood
+
+    # Save to file
+    with open("mood_log.txt", "a") as f:
+        f.write(f"Date: {date_str}\n")
+        f.write(f"  Mood: {mood} {moods.get(mood, '')}\n")  # New line: save mood
+        for item, value in status.items():
+            f.write(f"  {item}: {'✓' if value else '✗'}\n")
+        f.write(f"  Notes: {notes}\n")
+        f.write("-" * 40 + "\n")
+
+    messagebox.showinfo("Saved", "Your mood log has been saved!")
+    notes_entry.delete("1.0", tk.END)
+    selected_mood.set("")  #  New line: reset mood selection
+    for var in check_vars.values():
+        var.set(0)
+
+# Save button
+save_button = tk.Button(root, text="Save Entry", command=save_data, bg="#4CAF50", fg="white", font=("Helvetica", 12))
+save_button.pack(pady=20)
+
+# Run the GUI
+root.mainloop()
